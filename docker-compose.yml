@@ -1,0 +1,12 @@
+services:
+  clamav:
+    image: clamav/clamav-debian:stable
+    container_name: clamav_service
+    volumes:
+      - clamav_db:/var/lib/clamav
+      - ./samples:/data/samples:ro
+      - ./reports:/data/reports
+    tty: true
+
+volumes:
+  clamav_db:
