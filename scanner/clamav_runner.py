@@ -1,4 +1,3 @@
-import os
 import subprocess
 from typing import Dict, Optional
 
@@ -6,6 +5,23 @@ from typing import Dict, Optional
 class ClamAVRunner:
     def __init__(self, service_name: str = "clamav"):
         self.service_name = service_name
+    
+    def is_service_running(self) -> bool:
+        command = [
+            "docker",
+            "compose",
+            "ps",
+            "--status",
+            "running",
+        ]
+
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+        )
+
+        return self.service_name in completed.stdout
 
     def scan_file(self, container_file_path: str) -> Dict[str, Optional[str]]:
         """
@@ -24,6 +40,18 @@ class ClamAVRunner:
             - stdout (str)
             - stderr (str)
         """
+
+        if not self.is_service_running():
+            return {
+                "file_path": container_file_path,
+                "status": "environment_error",
+                "infected": None,
+                "signature": None,
+                "return_code": None,
+                "stdout": "",
+                "stderr": f'Service "{self.service_name}" is not running',
+            }
+
         command = [
             "docker",
             "compose",
@@ -43,20 +71,20 @@ class ClamAVRunner:
         stdout = completed.stdout.strip()
         stderr = completed.stderr.strip()
         return_code = completed.returncode
-
-        infected = False
+        infected = None
         signature = None
+        status = "scan_error"
 
         # Typical infected output:
         # /data/samples/malicious/eicar.txt: Eicar-Test-Signature FOUND
-        #
+        
         # Typical clean output:
         # /data/samples/clean/hello.txt: OK
 
         for line in stdout.splitlines():
             if line.endswith("FOUND"):
                 infected = True
-
+                status = "infected"
                 # Extract signature between ": " and " FOUND"
                 parts = line.split(": ", 1)
                 if len(parts) == 2:
@@ -64,8 +92,14 @@ class ClamAVRunner:
                     signature = right_side.removesuffix(" FOUND").strip()
                 break
 
+        if return_code == 0:
+            infected = False
+            status = "clean"
+
+
         return {
             "file_path": container_file_path,
+            "status": status,
             "infected": infected,
             "signature": signature,
             "return_code": return_code,
