@@ -77,10 +77,14 @@ clamav-qa-automation-framework/
 
 ## Quick Start
 
-Start the scanner container:
+- Start the scanner container:
+    docker compose up -d
 
-docker compose up -d
+- Run a manual scan:
+    docker compose exec clamav clamscan /data/samples/malicious/eicar.txt
 
-Run a test scan:
+- Run automated tests
+    python -m pytest -v
 
-docker compose exec clamav clamscan /data/samples/malicious/eicar.txt
+- Close the scanner container:
+    docker compose down
