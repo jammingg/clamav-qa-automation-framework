@@ -7,3 +7,23 @@ __pycache__/
 .vscode/
 reports/*
 !reports/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
+
+# Reports
+reports/
+*.json
+*.csv
+
+# OS
+.DS_Store
+
+# Virtual env
+venv/
+.env

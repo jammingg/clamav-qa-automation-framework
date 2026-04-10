@@ -7,7 +7,7 @@ runner = ClamAVRunner()
 def test_missing_file():
     result = runner.scan_file("/data/samples/malicious/not_exist.txt")
 
-    assert result["status"] == "scan_error"
+    assert result["status"] == "file_error"
     assert result["infected"] is None
 
 
@@ -21,6 +21,6 @@ def test_empty_file():
 def test_invalid_path():
     result = runner.scan_file("invalid_path")
 
-    assert result["status"] == "scan_error"
+    assert result["status"] == "file_error"
     assert result["infected"] is None
 
